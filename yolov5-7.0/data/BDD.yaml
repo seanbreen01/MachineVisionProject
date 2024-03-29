@@ -1,4 +1,4 @@
-path: ../datasets/bdd100k/bdd100k
+path: ../datasets/bdd100k/
 train: images/train
 val: images/val
 nc: 10
