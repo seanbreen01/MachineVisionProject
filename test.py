@@ -29,12 +29,33 @@ def preprocess_frame(frame):
     frame_normalized = frame_resized / 255.0  # Normalize if your model expects this
     return np.expand_dims(frame_normalized, axis=0).astype(np.float32)
 
-# Define a function for postprocessing
+def draw_detection(frame, box, color=(255, 0, 0), thickness=2):
+    """Draw a single detection box on the frame."""
+    height, width = frame.shape[:2]
+    ymin, xmin, ymax, xmax = box
+    start_point = (int(xmin * width), int(ymin * height))
+    end_point = (int(xmax * width), int(ymax * height))
+    frame = cv2.rectangle(frame, start_point, end_point, color, thickness)
+    return frame
+
 def postprocess_frame(frame, output_data):
-    # Adjust this postprocessing as per your model's output format
-    for detection in output_data[0]:
-        # Draw detection boxes on the frame
-        pass
+    # Assuming output_data[0] contains detection boxes with the format [ymin, xmin, ymax, xmax]
+    # and output_data[1] contains confidence scores for each detection
+    print('output 1:', output_data[0][0])
+    print('output2:', output_data[1][0])
+    detection_boxes = output_data[0][0]
+    confidence_scores = output_data[1][0]
+
+    for i in range(len(detection_boxes)):
+        box = detection_boxes[i]
+        confidence = confidence_scores[i]
+
+        # Check if the detection is confident enough
+        if confidence > 0.5:  # Adjust this threshold as needed
+            frame = draw_detection(frame, box)
+
+    return frame
+
 
 pipeline = gstreamer_pipeline()
 # Initialize video capture with GStreamer pipeline (adjust this as needed)
@@ -50,7 +71,7 @@ while cap.isOpened():
     input_data = preprocess_frame(frame)
     interpreter.set_tensor(input_details[0]['index'], input_data)
 
-    cv2.imshow('preprocessed frame', input_data)
+    # cv2.imshow('preprocessed frame', input_data)
 
     # Run inference
     interpreter.invoke()
