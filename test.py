@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import tensorflow.lite as tflite
 
-def gstreamer_pipeline(sensor_id=0, sensor_mode=3, capture_width=640, capture_height=480, display_width=640, display_height=480, framerate=30, flip_method=2):
+def gstreamer_pipeline(sensor_id=0, sensor_mode=3, capture_width=1280, capture_height=720, display_width=640, display_height=480, framerate=30, flip_method=2):
     return (
         f'nvarguscamerasrc sensor-id={sensor_id} sensor-mode={sensor_mode} ! '
         f'video/x-raw(memory:NVMM), width=(int){capture_width}, height=(int){capture_height}, '
@@ -46,21 +46,21 @@ while cap.isOpened():
     if not ret:
         break
 
-    # Preprocess the frame
-    input_data = preprocess_frame(frame)
-    interpreter.set_tensor(input_details[0]['index'], input_data)
+    # # Preprocess the frame
+    # input_data = preprocess_frame(frame)
+    # interpreter.set_tensor(input_details[0]['index'], input_data)
 
-    cv2.imshow('preprocessed frame', input_data)
+    # #cv2.imshow('preprocessed frame', input_data)
 
-    # Run inference
-    interpreter.invoke()
+    # # Run inference
+    # interpreter.invoke()
 
-    # Retrieve detection results
-    output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
+    # # Retrieve detection results
+    # output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
 
-    # Postprocess and display the frame
-    postprocess_frame(frame, output_data)
-    cv2.imshow('Object Detection', frame)
+    # # Postprocess and display the frame
+    # postprocess_frame(frame, output_data)
+    # #cv2.imshow('Object Detection', frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
