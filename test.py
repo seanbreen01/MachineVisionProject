@@ -16,7 +16,7 @@ def gstreamer_pipeline(sensor_id=0, sensor_mode=3, capture_width=1280, capture_h
 
 
 # Initialize the TensorFlow Lite interpreter
-interpreter = tflite.Interpreter(model_path='your_model.tflite')
+interpreter = tflite.Interpreter(model_path='best_mydetector-fp16.tflite')
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
