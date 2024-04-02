@@ -46,21 +46,21 @@ while cap.isOpened():
     if not ret:
         break
 
-    # # Preprocess the frame
-    # input_data = preprocess_frame(frame)
-    # interpreter.set_tensor(input_details[0]['index'], input_data)
+    # Preprocess the frame
+    input_data = preprocess_frame(frame)
+    interpreter.set_tensor(input_details[0]['index'], input_data)
 
-    # #cv2.imshow('preprocessed frame', input_data)
+    cv2.imshow('preprocessed frame', input_data)
 
-    # # Run inference
-    # interpreter.invoke()
+    # Run inference
+    interpreter.invoke()
 
-    # # Retrieve detection results
-    # output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
+    # Retrieve detection results
+    output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
 
-    # # Postprocess and display the frame
-    # postprocess_frame(frame, output_data)
-    # #cv2.imshow('Object Detection', frame)
+    # Postprocess and display the frame
+    postprocess_frame(frame, output_data)
+    cv2.imshow('Object Detection', frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
