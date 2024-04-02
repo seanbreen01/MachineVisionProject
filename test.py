@@ -14,6 +14,7 @@ def gstreamer_pipeline(sensor_id=0, sensor_mode=3, capture_width=1280, capture_h
     )
 
 
+labels = ['person', 'rider', 'car', 'bus', 'truck', 'bike', 'motor', 'traffic_light', 'traffic sign', 'train']
 
 # Initialize the TensorFlow Lite interpreter
 interpreter = tflite.Interpreter(model_path='best_mydetector-fp16.tflite')
@@ -21,6 +22,13 @@ interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
+
+outname = output_details[0]['name']
+
+if ('StatefulPartitionedCall' in outname): # This is a TF2 model
+    boxes_idx, classes_idx, scores_idx = 1, 3, 0
+else: # This is a TF1 model
+    boxes_idx, classes_idx, scores_idx = 0, 1, 2
 
 # Define a function to preprocess the frame
 def preprocess_frame(frame):
@@ -44,7 +52,7 @@ def postprocess_frame(frame, output_data):
     print('output 1:', output_data[0][0])
     print('output2:', output_data[1][0])
     detection_boxes = output_data[0][0]
-    confidence_scores = output_data[1][0]
+    confidence_scores = output_data[0][1]
 
     for i in range(len(detection_boxes)):
         box = detection_boxes[i]
@@ -75,6 +83,15 @@ while cap.isOpened():
 
     # Run inference
     interpreter.invoke()
+
+    boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0] # Bounding box coordinates of detected objects
+    classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
+    scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
+
+    print('boxes:', boxes)
+    print('classes:', classes)
+    print('scores:', scores)
+    
 
     # Retrieve detection results
     output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
