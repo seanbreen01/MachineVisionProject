@@ -42,12 +42,15 @@ cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
 print('cap declared')
 while cap.isOpened():
     ret, frame = cap.read()
+    cv2.imshow('frame', frame)
     if not ret:
         break
 
     # Preprocess the frame
     input_data = preprocess_frame(frame)
     interpreter.set_tensor(input_details[0]['index'], input_data)
+
+    cv2.imshow('preprocessed frame', input_data)
 
     # Run inference
     interpreter.invoke()
