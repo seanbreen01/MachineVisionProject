@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import tflite_runtime.interpreter as tflite
 
-def gstreamer_pipeline(sensor_id=0, sensor_mode=3, capture_width=640, capture_height=480, display_width=640, display_height=480, framerate=30, flip_method=2):
+def gstreamer_pipeline(sensor_id=0, sensor_mode=3, capture_width=1280, capture_height=720, display_width=640, display_height=480, framerate=30, flip_method=2):
     return (
         f'nvarguscamerasrc sensor-id={sensor_id} sensor-mode={sensor_mode} ! '
         f'video/x-raw(memory:NVMM), width=(int){capture_width}, height=(int){capture_height}, '
