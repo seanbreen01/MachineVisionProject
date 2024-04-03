@@ -69,19 +69,24 @@ output_details = interpreter.get_output_details()
 video_path = 'Testvideo.mp4'
 cap = cv2.VideoCapture(video_path)
 
+# Get original video properties
+original_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+original_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+original_fps = cap.get(cv2.CAP_PROP_FPS)
+
 # Video writer
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 output_path = 'output_video.mp4'
-out = cv2.VideoWriter(output_path, fourcc, 20.0, (640, 480))
+out = cv2.VideoWriter(output_path, fourcc, original_fps, (original_width, original_height))
 
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         break
 
-    # Resize the frame to model input size
+    # Resize the frame for the model input
     frame_resized = cv2.resize(frame, (640, 640))
-    
+
     # Preprocess the frame
     input_data = preprocess_frame(frame_resized)
     interpreter.set_tensor(input_details[0]['index'], input_data)
@@ -93,10 +98,12 @@ while cap.isOpened():
     output_data = interpreter.get_tensor(output_details[0]['index'])
     xyxy, classes, scores = YOLOdetect(output_data)
 
-    # Draw bounding boxes
+    # Scale bounding box coordinates back to original frame size
     for i in range(len(scores)):
         if scores[i] > 0.25:
             ymin, xmin, ymax, xmax = xyxy[0][i], xyxy[1][i], xyxy[2][i], xyxy[3][i]
+            xmin, xmax = xmin * original_width / 640, xmax * original_width / 640
+            ymin, ymax = ymin * original_height / 640, ymax * original_height / 640
             frame = draw_detection(frame, (ymin, xmin, ymax, xmax))
 
     # Save the frame with bounding boxes
