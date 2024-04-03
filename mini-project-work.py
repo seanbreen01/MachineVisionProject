@@ -91,7 +91,7 @@ while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         break
-    
+
     frame = cv2.resize(frame, (640, 640))
     # Preprocess the frame
     input_data = preprocess_frame(frame)
@@ -107,7 +107,7 @@ while cap.isOpened():
     xyxy, classes, scores = YOLOdetect(output_data) #boxes(x,y,x,y), classes(int), scores(float) [25200]
 
     for i in range(len(scores)):
-        if ((scores[i] > 0.1) and (scores[i] <= 1.0)):
+        if ((scores[i] > 0.25) and (scores[i] <= 1.0)):
             H = frame.shape[0]
             W = frame.shape[1]
             xmin = int(max(1,(xyxy[0][i] * W)))
@@ -115,12 +115,12 @@ while cap.isOpened():
             xmax = int(min(H,(xyxy[2][i] * W)))
             ymax = int(min(W,(xyxy[3][i] * H)))
 
-            print('xmin:', xmin)
-            print('ymin:', ymin)   
-            print('xmax:', xmax)
-            print('ymax:', ymax)
-            print('class:', classes[i])
-            print('score:', scores[i])
+            # print('xmin:', xmin)
+            # print('ymin:', ymin)   
+            # print('xmax:', xmax)
+            # print('ymax:', ymax)
+            # print('class:', classes[i])
+            # print('score:', scores[i])
             cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
 
     # Print output details for debugging
