@@ -69,6 +69,23 @@ def postprocess_frame(frame, boxes, scores, classes, threshold=0.01):
     return frame
 
 
+def classFilter(classdata):
+    classes = []  # create a list
+    for i in range(classdata.shape[0]):         # loop through all predictions
+        classes.append(classdata[i].argmax())   # get the best classification location
+    return classes  # return classes (int)
+
+def YOLOdetect(output_data):  # input = interpreter, output is boxes(xyxy), classes, scores
+    output_data = output_data[0]                # x(1, 25200, 7) to x(25200, 7)
+    boxes = np.squeeze(output_data[..., :4])    # boxes  [25200, 4]
+    scores = np.squeeze( output_data[..., 4:5]) # confidences  [25200, 1]
+    classes = classFilter(output_data[..., 5:]) # get classes
+    # Convert nx4 boxes from [x, y, w, h] to [x1, y1, x2, y2] where xy1=top-left, xy2=bottom-right
+    x, y, w, h = boxes[..., 0], boxes[..., 1], boxes[..., 2], boxes[..., 3] #xywh
+    xyxy = [x - w / 2, y - h / 2, x + w / 2, y + h / 2]  # xywh to xyxy   [4, 25200]
+
+    return xyxy, classes, scores  # output is boxes(x,y,x,y), classes(int), scores(float) [predictions length]
+
 pipeline = gstreamer_pipeline()
 # Initialize video capture with GStreamer pipeline (adjust this as needed)
 cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
@@ -101,7 +118,25 @@ while cap.isOpened():
     # output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
 
     # Inside your while loop, after the model inference:
-    output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
+    # output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
+
+    """Output data"""
+    output_data = interpreter.get_tensor(output_details[0]['index'])  # get tensor  x(1, 25200, 7)
+    xyxy, classes, scores = YOLOdetect(output_data) #boxes(x,y,x,y), classes(int), scores(float) [25200]
+
+    for i in range(len(scores)):
+        if ((scores[i] > 0.1) and (scores[i] <= 1.0)):
+            H = frame.shape[0]
+            W = frame.shape[1]
+            xmin = int(max(1,(xyxy[0][i] * W)))
+            ymin = int(max(1,(xyxy[1][i] * H)))
+            xmax = int(min(H,(xyxy[2][i] * W)))
+            ymax = int(min(W,(xyxy[3][i] * H)))
+
+            print('xmin:', xmin)
+            print('ymin:', ymin)   
+            print('xmax:', xmax)
+            print('ymax:', ymax)
 
     # Print output details for debugging
     for i, detail in enumerate(output_details):
@@ -111,7 +146,7 @@ while cap.isOpened():
     print(f"Number of output tensors: {len(output_data)}")
 
     # Retrieve detection results
-    output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
+    #output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
 
 
     boxes, classes, scores = output_data[boxes_idx], output_data[classes_idx], output_data[scores_idx]
