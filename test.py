@@ -49,22 +49,21 @@ def draw_detection(frame, box, color=(255, 0, 0), thickness=2):
     frame = cv2.rectangle(frame, start_point, end_point, color, thickness)
     return frame
 
-def postprocess_frame(frame, output_data):
-    # Assuming output_data[0] contains detection boxes with the format [ymin, xmin, ymax, xmax]
-    # and output_data[1] contains confidence scores for each detection
-    print('output 1:', output_data[0][0])
-    print('output2:', output_data[1][0])
-    detection_boxes = output_data[0][0]
-    confidence_scores = output_data[0][1]
-
-    for i in range(len(detection_boxes)):
-        box = detection_boxes[i]
-        confidence = confidence_scores[i]
-
-        # Check if the detection is confident enough
-        if confidence > 0.5:  # Adjust this threshold as needed
+def postprocess_frame(frame, boxes, scores, classes, threshold=0.01):
+    # boxes: Bounding box coordinates of detected objects
+    # scores: Confidence of detected objects
+    # classes: Class index of detected objects
+    for i in range(len(scores)):
+        if scores[i] > threshold:
+            box = boxes[i]  # y_min, x_min, y_max, x_max
+            class_id = int(classes[i])
+            confidence = scores[i]
+            label = labels[class_id] if class_id < len(labels) else 'Unknown'
             frame = draw_detection(frame, box)
-
+            # Optionally, add text for label and confidence score
+            label_text = f'{label}: {confidence:.2f}'
+            start_point = (int(box[1] * frame.shape[1]), int(box[0] * frame.shape[0]))  # x_min, y_min
+            cv2.putText(frame, label_text, start_point, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
     return frame
 
 
@@ -88,19 +87,24 @@ while cap.isOpened():
     # Run inference
     interpreter.invoke()
 
-    boxes = interpreter.get_tensor(output_details[0]['index']) # Bounding box coordinates of detected objects
-    print('boxes:', boxes)
-    classes = interpreter.get_tensor(output_details[2]['index']) # Class index of detected objects
-    print('classes:', classes)
-    scores = interpreter.get_tensor(output_details[scores_idx]['index']) # Confidence of detected objects
-    print('scores:', scores)
+    # boxes = interpreter.get_tensor(output_details[0]['index']) # Bounding box coordinates of detected objects
+    # print('boxes:', boxes)
+    # classes = interpreter.get_tensor(output_details[0]['index']) # Class index of detected objects
+    # print('classes:', classes)
+    # scores = interpreter.get_tensor(output_details[scores_idx]['index']) # Confidence of detected objects
+    # print('scores:', scores)
 
 
-    # Retrieve detection results
+    # # Retrieve detection results
+    # output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
+
+    # Inside your while loop, after the model inference:
     output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
+    boxes, classes, scores = output_data[boxes_idx], output_data[classes_idx], output_data[scores_idx]
+    postprocess_frame(frame, boxes, scores, classes)
 
     # Postprocess and display the frame
-    postprocess_frame(frame, output_data)
+    # postprocess_frame(frame, output_data)
     cv2.imshow('Object Detection', frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
