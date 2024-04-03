@@ -16,10 +16,11 @@ def gstreamer_pipeline(sensor_id=0, sensor_mode=3, capture_width=1280, capture_h
     )
 
 
-
+print('Loading YOLOv5 model...')
 # Load the YOLOv5 model
 model = torch.load('best_mydetector.pt')
 model.eval()
+print('Model loaded successfully.')
 
 # Function to apply object detection on a frame
 def detect(frame):
