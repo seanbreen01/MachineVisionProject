@@ -23,6 +23,9 @@ interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
+print('input',input_details)
+print('output', output_details)
+
 outname = output_details[0]['name']
 
 if ('StatefulPartitionedCall' in outname): # This is a TF2 model
@@ -84,14 +87,14 @@ while cap.isOpened():
     # Run inference
     interpreter.invoke()
 
-    boxes = interpreter.get_tensor(output_details[boxes_idx]['index'])[0] # Bounding box coordinates of detected objects
-    classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
-    scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
+    boxes = interpreter.get_tensor(output_details[boxes_idx]['index']) # Bounding box coordinates of detected objects
+    classes = interpreter.get_tensor(output_details[classes_idx]['index'])# Class index of detected objects
+    scores = interpreter.get_tensor(output_details[scores_idx]['index']) # Confidence of detected objects
 
     print('boxes:', boxes)
     print('classes:', classes)
     print('scores:', scores)
-    
+
 
     # Retrieve detection results
     output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
