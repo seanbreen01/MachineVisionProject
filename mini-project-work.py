@@ -142,3 +142,10 @@ while cap.isOpened():
     cv2.namedWindow('detect_result', cv2.WINDOW_NORMAL)
     cv2.imshow('detect_result', frame)
     #cv2.waitKey(0)
+# Add this line to handle the OpenCV window events
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+# Release the video capture object and close OpenCV windows
+cap.release()
+cv2.destroyAllWindows()
