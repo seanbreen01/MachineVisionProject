@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import tensorflow.lite as tflite
 
-def gstreamer_pipeline(sensor_id=0, sensor_mode=3, capture_width=1280, capture_height=720, display_width=640, display_height=480, framerate=30, flip_method=2):
+def gstreamer_pipeline(sensor_id=0, sensor_mode=3, capture_width=1280, capture_height=720, display_width=640, display_height=640, framerate=30, flip_method=2):
     return (
         f'nvarguscamerasrc sensor-id={sensor_id} sensor-mode={sensor_mode} ! '
         f'video/x-raw(memory:NVMM), width=(int){capture_width}, height=(int){capture_height}, '
@@ -28,12 +28,12 @@ print('output', output_details)
 
 
 
-outname = output_details[0]['name']
+# outname = output_details[0]['name']
 
-if ('StatefulPartitionedCall' in outname): # This is a TF2 model
-    boxes_idx, classes_idx, scores_idx = 1, 3, 0
-else: # This is a TF1 model
-    boxes_idx, classes_idx, scores_idx = 0, 1, 2
+# if ('StatefulPartitionedCall' in outname): # This is a TF2 model
+#     boxes_idx, classes_idx, scores_idx = 1, 3, 0
+# else: # This is a TF1 model
+#     boxes_idx, classes_idx, scores_idx = 0, 1, 2
 
 # Define a function to preprocess the frame
 def preprocess_frame(frame):
