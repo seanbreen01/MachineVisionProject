@@ -80,7 +80,7 @@ def YOLOdetect(output_data):  # input = interpreter, output is boxes(xyxy), clas
     return xyxy, classes, scores  # output is boxes(x,y,x,y), classes(int), scores(float) [predictions length]
 
 
-frame = cv2.imread('test.jpg')
+frame = cv2.imread('testImage.jpg')
 frame = cv2.resize(frame, (640, 640))
 #cv2.imshow('frame', frame)
 
