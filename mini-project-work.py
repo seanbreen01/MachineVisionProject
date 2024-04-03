@@ -120,7 +120,7 @@ while cap.isOpened():
             # print('xmax:', xmax)
             # print('ymax:', ymax)
             # print('class:', classes[i])
-            # print('score:', scores[i])
+            print('score:', scores[i])
             cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
 
     # Print output details for debugging
