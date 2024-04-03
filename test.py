@@ -137,6 +137,9 @@ while cap.isOpened():
             print('ymin:', ymin)   
             print('xmax:', xmax)
             print('ymax:', ymax)
+            print('class:', classes[i])
+            print('score:', scores[i])
+            cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
 
     # Print output details for debugging
     for i, detail in enumerate(output_details):
@@ -149,8 +152,8 @@ while cap.isOpened():
     #output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
 
 
-    boxes, classes, scores = output_data[boxes_idx], output_data[classes_idx], output_data[scores_idx]
-    postprocess_frame(frame, boxes, scores, classes)
+    #boxes, classes, scores = output_data[boxes_idx], output_data[classes_idx], output_data[scores_idx]
+   # postprocess_frame(frame, boxes, scores, classes)
 
     # Postprocess and display the frame
     # postprocess_frame(frame, output_data)
