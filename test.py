@@ -26,6 +26,8 @@ output_details = interpreter.get_output_details()
 print('input',input_details)
 print('output', output_details)
 
+
+
 outname = output_details[0]['name']
 
 if ('StatefulPartitionedCall' in outname): # This is a TF2 model
@@ -100,6 +102,18 @@ while cap.isOpened():
 
     # Inside your while loop, after the model inference:
     output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
+
+    # Print output details for debugging
+    for i, detail in enumerate(output_details):
+        print(f"Output {i}: {detail}")
+
+    # Make sure the length of output_data is as expected
+    print(f"Number of output tensors: {len(output_data)}")
+
+    # Retrieve detection results
+    output_data = [interpreter.get_tensor(output_details[i]['index']) for i in range(len(output_details))]
+
+
     boxes, classes, scores = output_data[boxes_idx], output_data[classes_idx], output_data[scores_idx]
     postprocess_frame(frame, boxes, scores, classes)
 
