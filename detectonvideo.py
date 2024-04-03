@@ -80,6 +80,7 @@ output_path = 'output_video.mp4'
 out = cv2.VideoWriter(output_path, fourcc, original_fps, (original_width, original_height))
 
 while cap.isOpened():
+    print('frame')
     ret, frame = cap.read()
     if not ret:
         break
