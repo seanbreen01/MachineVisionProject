@@ -87,9 +87,9 @@ while cap.isOpened():
     # Run inference
     interpreter.invoke()
 
-    boxes = interpreter.get_tensor(output_details[boxes_idx]['index']) # Bounding box coordinates of detected objects
-    classes = interpreter.get_tensor(output_details[classes_idx]['index'])# Class index of detected objects
-    scores = interpreter.get_tensor(output_details[scores_idx]['index']) # Confidence of detected objects
+    boxes = interpreter.get_tensor(output_details[0]['index']) # Bounding box coordinates of detected objects
+    classes = interpreter.get_tensor(output_details[classes_idx]['index'])[0] # Class index of detected objects
+    scores = interpreter.get_tensor(output_details[scores_idx]['index'])[0] # Confidence of detected objects
 
     print('boxes:', boxes)
     print('classes:', classes)
