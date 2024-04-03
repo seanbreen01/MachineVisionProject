@@ -122,6 +122,7 @@ while cap.isOpened():
             # print('class:', classes[i])
             print('score:', scores[i])
             cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
+            print('rectangle drawn')
 
     # Print output details for debugging
     # for i, detail in enumerate(output_details):
@@ -136,6 +137,7 @@ while cap.isOpened():
 
     # Postprocess and display the frame
     # frame = postprocess_frame(frame, output_data, scores, classes)
-    #cv2.imwrite('output.jpg', frame)
+    #cv2.imwrite('sean.jpg', frame)
+    cv2.namedWindow('detect_result', cv2.WINDOW_NORMAL)
     cv2.imshow('Object Detection', frame)
     #cv2.waitKey(0)
