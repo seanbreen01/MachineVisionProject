@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import tensorflow.lite as tflite
+
 
 def gstreamer_pipeline(sensor_id=0, sensor_mode=3, capture_width=1280, capture_height=720, display_width=640, display_height=640, framerate=30, flip_method=2):
     return (
@@ -16,9 +16,12 @@ def gstreamer_pipeline(sensor_id=0, sensor_mode=3, capture_width=1280, capture_h
 import torch
 import cv2
 from time import time
+from models.yolo import Model  # Import the YOLO model class
 
 # Load the YOLOv5 model
-model = torch.hub.load('ultralytics/yolov5', 'custom', path_or_model='best_mydetector.pt')  # Replace 'yolov5s.pt' with your model file
+model = Model(cfg='./Data/BDD.yaml')  # Use the correct configuration file for your model
+model.load_state_dict(torch.load('best_mydetector.pt')['model'])  # Replace 'best_mydetector.pt' with your model file
+model.eval()
 
 # Function to apply object detection on a frame
 def detect(frame):
