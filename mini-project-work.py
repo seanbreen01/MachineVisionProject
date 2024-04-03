@@ -126,6 +126,6 @@ for i in range(len(scores)):
 # postprocess_frame(frame, boxes, scores, classes)
 
 # Postprocess and display the frame
-frame = postprocess_frame(frame, output_data)
+frame = postprocess_frame(frame, output_data, scores, classes)
 cv2.imwrite('output.jpg', frame)
 # cv2.imshow('Object Detection', frame)
