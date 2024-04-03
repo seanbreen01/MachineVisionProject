@@ -90,7 +90,7 @@ while cap.isOpened():
 
     boxes = interpreter.get_tensor(output_details[0]['index']) # Bounding box coordinates of detected objects
     print('boxes:', boxes)
-    classes = interpreter.get_tensor(output_details[1]['index']) # Class index of detected objects
+    classes = interpreter.get_tensor(output_details[2]['index']) # Class index of detected objects
     print('classes:', classes)
     scores = interpreter.get_tensor(output_details[scores_idx]['index']) # Confidence of detected objects
     print('scores:', scores)
