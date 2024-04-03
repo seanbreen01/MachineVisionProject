@@ -80,53 +80,62 @@ def YOLOdetect(output_data):  # input = interpreter, output is boxes(xyxy), clas
     return xyxy, classes, scores  # output is boxes(x,y,x,y), classes(int), scores(float) [predictions length]
 
 
-frame = cv2.imread('testImage.jpg')
-frame = cv2.resize(frame, (640, 640))
+# frame = cv2.imread('testImage.jpg')
+# frame = cv2.resize(frame, (640, 640))
 #cv2.imshow('frame', frame)
 
-# Preprocess the frame
-input_data = preprocess_frame(frame)
-interpreter.set_tensor(input_details[0]['index'], input_data)
+pipeline = gstreamer_pipeline()
+cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
 
-# cv2.imshow('preprocessed frame', input_data)
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        break
+    
+    frame = cv2.resize(frame, (640, 640))
+    # Preprocess the frame
+    input_data = preprocess_frame(frame)
+    interpreter.set_tensor(input_details[0]['index'], input_data)
 
-# Run inference
-interpreter.invoke()
+    # cv2.imshow('preprocessed frame', input_data)
 
-"""Output data"""
-output_data = interpreter.get_tensor(output_details[0]['index'])  # get tensor  x(1, 25200, 7)
-xyxy, classes, scores = YOLOdetect(output_data) #boxes(x,y,x,y), classes(int), scores(float) [25200]
+    # Run inference
+    interpreter.invoke()
 
-for i in range(len(scores)):
-    if ((scores[i] > 0.1) and (scores[i] <= 1.0)):
-        H = frame.shape[0]
-        W = frame.shape[1]
-        xmin = int(max(1,(xyxy[0][i] * W)))
-        ymin = int(max(1,(xyxy[1][i] * H)))
-        xmax = int(min(H,(xyxy[2][i] * W)))
-        ymax = int(min(W,(xyxy[3][i] * H)))
+    """Output data"""
+    output_data = interpreter.get_tensor(output_details[0]['index'])  # get tensor  x(1, 25200, 7)
+    xyxy, classes, scores = YOLOdetect(output_data) #boxes(x,y,x,y), classes(int), scores(float) [25200]
 
-        print('xmin:', xmin)
-        print('ymin:', ymin)   
-        print('xmax:', xmax)
-        print('ymax:', ymax)
-        print('class:', classes[i])
-        print('score:', scores[i])
-        cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
+    for i in range(len(scores)):
+        if ((scores[i] > 0.1) and (scores[i] <= 1.0)):
+            H = frame.shape[0]
+            W = frame.shape[1]
+            xmin = int(max(1,(xyxy[0][i] * W)))
+            ymin = int(max(1,(xyxy[1][i] * H)))
+            xmax = int(min(H,(xyxy[2][i] * W)))
+            ymax = int(min(W,(xyxy[3][i] * H)))
 
-# Print output details for debugging
-# for i, detail in enumerate(output_details):
-#     print(f"Output {i}: {detail}")
+            print('xmin:', xmin)
+            print('ymin:', ymin)   
+            print('xmax:', xmax)
+            print('ymax:', ymax)
+            print('class:', classes[i])
+            print('score:', scores[i])
+            cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
 
-# Make sure the length of output_data is as expected
-#print(f"Number of output tensors: {len(output_data)}")
+    # Print output details for debugging
+    # for i, detail in enumerate(output_details):
+    #     print(f"Output {i}: {detail}")
+
+    # Make sure the length of output_data is as expected
+    #print(f"Number of output tensors: {len(output_data)}")
 
 
-#boxes, classes, scores = output_data[boxes_idx], output_data[classes_idx], output_data[scores_idx]
-# postprocess_frame(frame, boxes, scores, classes)
+    #boxes, classes, scores = output_data[boxes_idx], output_data[classes_idx], output_data[scores_idx]
+    # postprocess_frame(frame, boxes, scores, classes)
 
-# Postprocess and display the frame
-# frame = postprocess_frame(frame, output_data, scores, classes)
-cv2.imwrite('output.jpg', frame)
-cv2.imshow('Object Detection', frame)
-cv2.waitKey(0)
+    # Postprocess and display the frame
+    # frame = postprocess_frame(frame, output_data, scores, classes)
+    #cv2.imwrite('output.jpg', frame)
+    cv2.imshow('Object Detection', frame)
+    #cv2.waitKey(0)
