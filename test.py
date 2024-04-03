@@ -157,7 +157,7 @@ while cap.isOpened():
 
     # Postprocess and display the frame
     # postprocess_frame(frame, output_data)
-    cv2.imshow('Object Detection', frame)
+    # cv2.imshow('Object Detection', frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
