@@ -92,9 +92,10 @@ while cap.isOpened():
     if not ret:
         break
 
-    frame = cv2.resize(frame, (640, 640))
+    copyFrame = frame.copy()
+    copyFrame = cv2.resize(copyFrame, (640, 640))
     # Preprocess the frame
-    input_data = preprocess_frame(frame)
+    input_data = preprocess_frame(copyFrame)
     interpreter.set_tensor(input_details[0]['index'], input_data)
 
     # cv2.imshow('preprocessed frame', input_data)
@@ -139,5 +140,5 @@ while cap.isOpened():
     # frame = postprocess_frame(frame, output_data, scores, classes)
     #cv2.imwrite('sean.jpg', frame)
     cv2.namedWindow('detect_result', cv2.WINDOW_NORMAL)
-    cv2.imshow('Object Detection', frame)
+    cv2.imshow('detect_result', frame)
     #cv2.waitKey(0)
