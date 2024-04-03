@@ -74,13 +74,14 @@ cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
 print('cap declared')
 while cap.isOpened():
     ret, frame = cap.read()
+    frame = cv2.resize(frame, (640, 640))
     cv2.imshow('frame', frame)
     if not ret:
         break
 
     # Preprocess the frame
-    input_data = preprocess_frame(frame)
-    interpreter.set_tensor(input_details[0]['index'], input_data)
+    #input_data = preprocess_frame(frame)
+    interpreter.set_tensor(input_details[0]['index'], frame)
 
     # cv2.imshow('preprocessed frame', input_data)
 
@@ -88,11 +89,10 @@ while cap.isOpened():
     interpreter.invoke()
 
     boxes = interpreter.get_tensor(output_details[0]['index']) # Bounding box coordinates of detected objects
-    classes = interpreter.get_tensor(output_details[1]['index']) # Class index of detected objects
-    scores = interpreter.get_tensor(output_details[scores_idx][2]) # Confidence of detected objects
-
     print('boxes:', boxes)
+    classes = interpreter.get_tensor(output_details[1]['index']) # Class index of detected objects
     print('classes:', classes)
+    scores = interpreter.get_tensor(output_details[scores_idx]['index']) # Confidence of detected objects
     print('scores:', scores)
 
 
