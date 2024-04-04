@@ -1,5 +1,3 @@
-
-
 import cv2
 import numpy as np
 import tensorflow.lite as tflite
@@ -52,13 +50,8 @@ def YOLOdetect(output_data):  # input = interpreter, output is boxes(xyxy), clas
 # Video file handling
 video_path = 'Inference Images/video.mp4'  # Specify the path to your video file
 
-pipeline = gstreamer_pipeline(flip_method=0)
+pipeline = gstreamer_pipeline(flip_method=2)
 cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
-#cap = cv2.VideoCapture(video_path)
-
-# Define the codec and create VideoWriter object
-# fourcc = cv2.VideoWriter_fourcc(*'XVID')
-# out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640, 640))
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -113,13 +106,11 @@ while cap.isOpened():
         formatted_confidence = "{:.2f}".format(confidences[i])
         cv2.putText(frame, formatted_confidence, (x + 100, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
 
-    cv2.putText(frame, 'Press q to exit', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
-    #out.write(frame)  # Write the frame into the file 'output.avi'
+  
 
     cv2.imshow('Frame', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 cap.release()
-#out.release()
 cv2.destroyAllWindows()
