@@ -67,8 +67,8 @@ while cap.isOpened():
     boxes = []
     confidences = []
     for i in range(len(scores)):
-        if scores[i] > 0.1:
-            print('high score')
+        if scores[i] > 0.75:
+            #print('high score')
             H = frame.shape[0]
             W = frame.shape[1]
             xmin = max(1, (xyxy[0][i] * W))
@@ -80,7 +80,7 @@ while cap.isOpened():
 
     # Apply Non-Maximum Suppression
     nms_threshold = 0.4  # NMS threshold, can be adjusted
-    indices = cv2.dnn.NMSBoxes(boxes, confidences, score_threshold=0.1, nms_threshold=nms_threshold)
+    indices = cv2.dnn.NMSBoxes(boxes, confidences, score_threshold=0.75, nms_threshold=nms_threshold)
 
     # Draw the rectangles and labels for NMS filtered detections
     for i in indices:
