@@ -114,7 +114,14 @@ for i in indices:
     box = boxes[i]
     x, y, w, h = box[0], box[1], box[2], box[3]
 
-    cv2.rectangle(frame, (x, y), (x + w, y + h), (10, 255, 0), 2)
+    # Make sure coordinates are integers
+    x, y, w, h = int(x), int(y), int(w), int(h)
+
+    # Calculate the bottom-right corner of the rectangle
+    bottom_right_x = x + w
+    bottom_right_y = y + h
+
+    cv2.rectangle(frame, (x, y), (bottom_right_x, bottom_right_y), (10, 255, 0), 2)
     cv2.putText(frame, labels[classes[i]], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
     cv2.putText(frame, str(confidences[i]), (x + 150, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
 
