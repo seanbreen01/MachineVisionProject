@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import tensorflow.lite as tflite
+import os
+import glob
 
 labels = ['person', 'rider', 'car', 'bus', 'truck', 'bike', 'motor', 'traffic_light', 'traffic sign', 'train']
 
@@ -11,8 +13,8 @@ interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
-print('input',input_details)
-print('output', output_details)
+# print('input',input_details)
+# print('output', output_details)
 
 # Define a function to preprocess the frame
 def preprocess_frame(frame):
@@ -38,46 +40,66 @@ def YOLOdetect(output_data):  # input = interpreter, output is boxes(xyxy), clas
 
     return xyxy, classes, scores  # output is boxes(x,y,x,y), classes(int), scores(float) [predictions length]
 
+results_dir = 'Results'
+if not os.path.exists(results_dir):
+    os.makedirs(results_dir)
 
-frame = cv2.imread('testImage.jpg')
-frame = cv2.resize(frame, (640, 640))
+# Process each image in the folder
+for file_path in glob.glob('Inference Images/*'): 
+    if file_path.endswith(".jpg") or file_path.endswith(".png"):
+        frame = cv2.imread(file_path)
+        frame = cv2.resize(frame, (640, 640))
+        copyFrame = frame.copy()
 
-
-copyFrame = frame.copy()
-copyFrame = cv2.resize(copyFrame, (640, 640))
-# Preprocess the frame
-input_data = preprocess_frame(copyFrame)
-interpreter.set_tensor(input_details[0]['index'], input_data)
-
-
-# Run inference
-interpreter.invoke()
-
-"""Output data"""
-output_data = interpreter.get_tensor(output_details[0]['index'])  # get tensor  x(1, 25200, 7)
-xyxy, classes, scores = YOLOdetect(output_data) #boxes(x,y,x,y), classes(int), scores(float) [25200]
-
-for i in range(len(scores)):
-    if ((scores[i] > 0.75) and (scores[i] <= 1.0)):
-        H = frame.shape[0]
-        W = frame.shape[1]
-        xmin = int(max(1,(xyxy[0][i] * W)))
-        ymin = int(max(1,(xyxy[1][i] * H)))
-        xmax = int(min(H,(xyxy[2][i] * W)))
-        ymax = int(min(W,(xyxy[3][i] * H)))
-
-        # print('xmin:', xmin)
-        # print('ymin:', ymin)   
-        # print('xmax:', xmax)
-        # print('ymax:', ymax)
-        # print('class:', classes[i])
-        print('score:', scores[i])
-        cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
-        cv2.putText(frame, labels[classes[i]], (xmin, ymin-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
-        cv2.putText(frame, str(scores[i]), (xmin+150, ymin-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
-        print('rectangle drawn')
+        # Preprocess the frame
+        input_data = preprocess_frame(copyFrame)
+        interpreter.set_tensor(input_details[0]['index'], input_data)
 
 
-cv2.namedWindow('detect_result', cv2.WINDOW_NORMAL)
-cv2.imshow('detect_result', frame)
-cv2.waitKey(0)
+        # Run inference
+        interpreter.invoke()
+
+        output_data = interpreter.get_tensor(output_details[0]['index'])  # get tensor  x(1, 25200, 7)
+        xyxy, classes, scores = YOLOdetect(output_data) #boxes(x,y,x,y), classes(int), scores(float) [25200]
+
+        # Convert xyxy to the format expected by OpenCV NMS and prepare scores
+        boxes = []
+        confidences = []
+        for i in range(len(scores)):
+            if scores[i] > 0.75:
+                H = frame.shape[0]
+                W = frame.shape[1]
+                xmin = max(1, (xyxy[0][i] * W))
+                ymin = max(1, (xyxy[1][i] * H))
+                xmax = min(H, (xyxy[2][i] * W))
+                ymax = min(W, (xyxy[3][i] * H))
+                boxes.append([xmin, ymin, int(xmax - xmin), int(ymax - ymin)])  # Format: [x, y, width, height]
+                confidences.append(float(scores[i]))
+
+        # Apply Non-Maximum Suppression
+        nms_threshold = 0.4  # NMS threshold, can be adjusted
+        indices = cv2.dnn.NMSBoxes(boxes, confidences, score_threshold=0.75, nms_threshold=nms_threshold)
+
+        # Draw the rectangles and labels for NMS filtered detections
+        for i in indices:
+            i = i[0]  # Unpack the index
+            box = boxes[i]
+            x, y, w, h = box[0], box[1], box[2], box[3]
+
+            # Make sure coordinates are integers
+            x, y, w, h = int(x), int(y), int(w), int(h)
+
+            # Calculate the bottom-right corner of the rectangle
+            bottom_right_x = x + w
+            bottom_right_y = y + h
+
+            cv2.rectangle(frame, (x, y), (bottom_right_x, bottom_right_y), (10, 255, 0), 2)
+            cv2.putText(frame, labels[classes[i]], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
+            formatted_confidence = "{:.2f}".format(confidences[i])
+            cv2.putText(frame, formatted_confidence, (x + 100, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
+
+
+
+        cv2.namedWindow('detect_result', cv2.WINDOW_NORMAL)
+        cv2.imshow('detect_result', frame)
+        cv2.waitKey(0)
