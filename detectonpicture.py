@@ -72,7 +72,7 @@ frame = cv2.imread('testImage.jpg')
 frame = cv2.resize(frame, (640, 640))
 #cv2.imshow('frame', frame)
 
-H, W = frame.shape[:2]  # Get frame height and width
+#H, W = frame.shape[:2]  # Get frame height and width
 
 
 copyFrame = frame.copy()
@@ -107,6 +107,8 @@ indices = cv2.dnn.NMSBoxes(boxes_for_nms, filtered_scores, score_threshold=0.2, 
 # Now draw the boxes and annotations using the indices returned by NMS
 for i in indices:
     i = i[0]  # NMSBoxes returns a list of lists
+    H = frame.shape[0]
+    W = frame.shape[1]
     xmin = int(max(1, (xyxy[0][i] * W)))
     ymin = int(max(1, (xyxy[1][i] * H)))
     xmax = int(min(H, (xyxy[2][i] * W)))
