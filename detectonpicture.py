@@ -90,38 +90,34 @@ interpreter.invoke()
 output_data = interpreter.get_tensor(output_details[0]['index'])  # get tensor  x(1, 25200, 7)
 xyxy, classes, scores = YOLOdetect(output_data) #boxes(x,y,x,y), classes(int), scores(float) [25200]
 
-boxes_for_nms = []
+# Convert xyxy to the format expected by OpenCV NMS and prepare scores
+boxes = []
+confidences = []
 for i in range(len(scores)):
-    if scores[i] > 0.2:  # Adjust this threshold as needed
+    if scores[i] > 0.75:
         H = frame.shape[0]
         W = frame.shape[1]
-        # x1, y1, x2, y2 = xyxy[0][i], xyxy[1][i], xyxy[2][i], xyxy[3][i]
-        x1 = int(max(1,(xyxy[0][i] * W)))
-        y1 = int(max(1,(xyxy[1][i] * H)))
-        x2 = int(min(H,(xyxy[2][i] * W)))
-        y2 = int(min(W,(xyxy[3][i] * H)))
-
-        box_width, box_height = x2 - x1, y2 - y1
-        boxes_for_nms.append([int(x1), int(y1), int(x2), int(y2)])
-# Filter scores in the same way as boxes
-filtered_scores = [float(scores[i]) for i in range(len(scores)) if scores[i] > 0.2]
-
+        xmin = max(1, (xyxy[0][i] * W))
+        ymin = max(1, (xyxy[1][i] * H))
+        xmax = min(H, (xyxy[2][i] * W))
+        ymax = min(W, (xyxy[3][i] * H))
+        boxes.append([xmin, ymin, int(xmax - xmin), int(ymax - ymin)])  # Format: [x, y, width, height]
+        confidences.append(float(scores[i]))
 
 # Apply Non-Maximum Suppression
-indices = cv2.dnn.NMSBoxes(boxes_for_nms, filtered_scores, score_threshold=0.2, nms_threshold=0.4)
+nms_threshold = 0.4  # NMS threshold, can be adjusted
+indices = cv2.dnn.NMSBoxes(boxes, confidences, score_threshold=0.75, nms_threshold=nms_threshold)
 
-# Now draw the boxes and annotations using the indices returned by NMS
+# Draw the rectangles and labels for NMS filtered detections
 for i in indices:
-    i = i[0]  # NMSBoxes returns a list of lists
-    
-    xmin = int(max(1, (xyxy[0][i] * W)))
-    ymin = int(max(1, (xyxy[1][i] * H)))
-    xmax = int(min(H, (xyxy[2][i] * W)))
-    ymax = int(min(W, (xyxy[3][i] * H)))
+    i = i[0]  # Unpack the index
+    box = boxes[i]
+    x, y, w, h = box[0], box[1], box[2], box[3]
 
-    cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (10, 255, 0), 2)
-    cv2.putText(frame, labels[classes[i]], (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
-    cv2.putText(frame, str(scores[i]), (xmin + 150, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
+    cv2.rectangle(frame, (x, y), (x + w, y + h), (10, 255, 0), 2)
+    cv2.putText(frame, labels[classes[i]], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
+    cv2.putText(frame, str(confidences[i]), (x + 150, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
+
 
 
 # Print output details for debugging
