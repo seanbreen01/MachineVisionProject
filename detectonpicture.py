@@ -123,7 +123,8 @@ for i in indices:
 
     cv2.rectangle(frame, (x, y), (bottom_right_x, bottom_right_y), (10, 255, 0), 2)
     cv2.putText(frame, labels[classes[i]], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
-    cv2.putText(frame, str(confidences[i]), (x + 150, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
+    formatted_confidence = "{:.2f}".format(confidences[i])
+    cv2.putText(frame, formatted_confidence, (x + 50, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
 
 
 
