@@ -97,7 +97,7 @@ while cap.isOpened():
         formatted_confidence = "{:.2f}".format(confidences[i])
         cv2.putText(frame, formatted_confidence, (x + 100, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
 
-
+    cv2.putText(frame, 'Press q to exit', (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
     out.write(frame)  # Write the frame into the file 'output.avi'
 
     cv2.imshow('Frame', frame)
