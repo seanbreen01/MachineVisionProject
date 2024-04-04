@@ -91,7 +91,7 @@ output_data = interpreter.get_tensor(output_details[0]['index'])  # get tensor  
 xyxy, classes, scores = YOLOdetect(output_data) #boxes(x,y,x,y), classes(int), scores(float) [25200]
 
 for i in range(len(scores)):
-    if ((scores[i] > 0.25) and (scores[i] <= 1.0)):
+    if ((scores[i] > 0.75) and (scores[i] <= 1.0)):
         H = frame.shape[0]
         W = frame.shape[1]
         xmin = int(max(1,(xyxy[0][i] * W)))
@@ -106,6 +106,8 @@ for i in range(len(scores)):
         # print('class:', classes[i])
         print('score:', scores[i])
         cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
+        cv2.putText(frame, labels[classes[i]], (xmin, ymin-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
+        cv2.putText(frame, str(scores[i]), (xmin+150, ymin-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36,255,12), 2)
         print('rectangle drawn')
 
 # Print output details for debugging
@@ -124,4 +126,4 @@ for i in range(len(scores)):
 #cv2.imwrite('sean.jpg', frame)
 cv2.namedWindow('detect_result', cv2.WINDOW_NORMAL)
 cv2.imshow('detect_result', frame)
-#cv2.waitKey(0)
+cv2.waitKey(0)
