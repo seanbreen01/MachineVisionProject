@@ -120,7 +120,7 @@ for i in range(len(scores)):
 # postprocess_frame(frame, boxes, scores, classes)
 
 # Postprocess and display the frame
-frame = postprocess_frame(frame, output_data, scores, classes)
+# frame = postprocess_frame(frame, output_data, scores, classes)
 #cv2.imwrite('sean.jpg', frame)
 cv2.namedWindow('detect_result', cv2.WINDOW_NORMAL)
 cv2.imshow('detect_result', frame)
