@@ -95,10 +95,14 @@ for i in range(len(scores)):
     if scores[i] > 0.2:  # Adjust this threshold as needed
         H = frame.shape[0]
         W = frame.shape[1]
-        x1, y1, x2, y2 = xyxy[0][i], xyxy[1][i], xyxy[2][i], xyxy[3][i]
-        box_width, box_height = x2 - x1, y2 - y1
-        boxes_for_nms.append([int(x1 * W), int(y1 * H), int(box_width * W), int(box_height * H)])
+        # x1, y1, x2, y2 = xyxy[0][i], xyxy[1][i], xyxy[2][i], xyxy[3][i]
+        x1 = int(max(1,(xyxy[0][i] * W)))
+        y1 = int(max(1,(xyxy[1][i] * H)))
+        x2 = int(min(H,(xyxy[2][i] * W)))
+        y2 = int(min(W,(xyxy[3][i] * H)))
 
+        box_width, box_height = x2 - x1, y2 - y1
+        boxes_for_nms.append([int(x1), int(y1), int(x2), int(y2)])
 # Filter scores in the same way as boxes
 filtered_scores = [float(scores[i]) for i in range(len(scores)) if scores[i] > 0.2]
 
