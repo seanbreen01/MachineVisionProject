@@ -122,8 +122,8 @@ for i in indices:
     bottom_right_y = y + h
 
     cv2.rectangle(frame, (x, y), (bottom_right_x, bottom_right_y), (10, 255, 0), 2)
-    cv2.putText(frame, labels[classes[i]], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
-    cv2.putText(frame, str(confidences[i]), (x + 150, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (36, 255, 12), 2)
+    cv2.putText(frame, labels[classes[i]], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
+    cv2.putText(frame, str(confidences[i]), (x + 150, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
 
 
 
