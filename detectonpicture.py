@@ -90,15 +90,18 @@ interpreter.invoke()
 output_data = interpreter.get_tensor(output_details[0]['index'])  # get tensor  x(1, 25200, 7)
 xyxy, classes, scores = YOLOdetect(output_data) #boxes(x,y,x,y), classes(int), scores(float) [25200]
 
-# Convert xyxy format to the format expected by cv2.dnn.NMSBoxes (x, y, width, height)
 boxes_for_nms = []
 for i in range(len(scores)):
     if scores[i] > 0.2:  # Adjust this threshold as needed
-        x_center, y_center, box_width, box_height = xyxy[0][i], xyxy[1][i], xyxy[2][i] - xyxy[0][i], xyxy[3][i] - xyxy[1][i]
-        boxes_for_nms.append([x_center, y_center, box_width, box_height])
+        x1, y1, x2, y2 = xyxy[0][i], xyxy[1][i], xyxy[2][i], xyxy[3][i]
+        box_width, box_height = x2 - x1, y2 - y1
+        boxes_for_nms.append([int(x1 * W), int(y1 * H), int(box_width * W), int(box_height * H)])
+
+# Filter scores in the same way as boxes
+filtered_scores = [scores[i] for i in range(len(scores)) if scores[i] > 0.2]
 
 # Apply Non-Maximum Suppression
-indices = cv2.dnn.NMSBoxes(boxes_for_nms, scores, score_threshold=0.2, nms_threshold=0.4)  # Adjust these thresholds as needed
+indices = cv2.dnn.NMSBoxes(boxes_for_nms, filtered_scores, score_threshold=0.2, nms_threshold=0.4)
 
 # Now draw the boxes and annotations using the indices returned by NMS
 for i in indices:
