@@ -66,6 +66,8 @@ while cap.isOpened():
     input_data = preprocess_frame(copyFrame)
     interpreter.set_tensor(input_details[0]['index'], input_data)
 
+    interpreter.invoke()
+
     # Run inference
     output_data = interpreter.get_tensor(output_details[0]['index'])  # get tensor  x(1, 25200, 7)
     xyxy, classes, scores = YOLOdetect(output_data) #boxes(x,y,x,y), classes(int), scores(float) [25200]
