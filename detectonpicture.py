@@ -93,6 +93,8 @@ xyxy, classes, scores = YOLOdetect(output_data) #boxes(x,y,x,y), classes(int), s
 boxes_for_nms = []
 for i in range(len(scores)):
     if scores[i] > 0.2:  # Adjust this threshold as needed
+        H = frame.shape[0]
+        W = frame.shape[1]
         x1, y1, x2, y2 = xyxy[0][i], xyxy[1][i], xyxy[2][i], xyxy[3][i]
         box_width, box_height = x2 - x1, y2 - y1
         boxes_for_nms.append([int(x1 * W), int(y1 * H), int(box_width * W), int(box_height * H)])
@@ -107,8 +109,7 @@ indices = cv2.dnn.NMSBoxes(boxes_for_nms, filtered_scores, score_threshold=0.2, 
 # Now draw the boxes and annotations using the indices returned by NMS
 for i in indices:
     i = i[0]  # NMSBoxes returns a list of lists
-    H = frame.shape[0]
-    W = frame.shape[1]
+    
     xmin = int(max(1, (xyxy[0][i] * W)))
     ymin = int(max(1, (xyxy[1][i] * H)))
     xmax = int(min(H, (xyxy[2][i] * W)))
