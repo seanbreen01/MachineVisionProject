@@ -98,7 +98,8 @@ for i in range(len(scores)):
         boxes_for_nms.append([int(x1 * W), int(y1 * H), int(box_width * W), int(box_height * H)])
 
 # Filter scores in the same way as boxes
-filtered_scores = [scores[i] for i in range(len(scores)) if scores[i] > 0.2]
+filtered_scores = [float(scores[i]) for i in range(len(scores)) if scores[i] > 0.2]
+
 
 # Apply Non-Maximum Suppression
 indices = cv2.dnn.NMSBoxes(boxes_for_nms, filtered_scores, score_threshold=0.2, nms_threshold=0.4)
