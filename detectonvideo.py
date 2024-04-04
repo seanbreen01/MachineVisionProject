@@ -1,40 +1,22 @@
 import cv2
 import numpy as np
 import tensorflow.lite as tflite
+import os
 
-# Define a function to preprocess the frame
+labels = ['person', 'rider', 'car', 'bus', 'truck', 'bike', 'motor', 'traffic_light', 'traffic sign', 'train']
+
+# Initialize the TensorFlow Lite interpreter
+interpreter = tflite.Interpreter(model_path='best_mydetector-fp16.tflite')
+interpreter.allocate_tensors()
+
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
+
 def preprocess_frame(frame):
     # Adjust these preprocessing steps as per your model requirements
     frame_resized = cv2.resize(frame, (input_details[0]['shape'][2], input_details[0]['shape'][1]))
     frame_normalized = frame_resized / 255.0  # Normalize if your model expects this
     return np.expand_dims(frame_normalized, axis=0).astype(np.float32)
-
-def draw_detection(frame, box, color=(255, 0, 0), thickness=2):
-    """Draw a single detection box on the frame."""
-    height, width = frame.shape[:2]
-    ymin, xmin, ymax, xmax = box
-    start_point = (int(xmin * width), int(ymin * height))
-    end_point = (int(xmax * width), int(ymax * height))
-    frame = cv2.rectangle(frame, start_point, end_point, color, thickness)
-    return frame
-
-def postprocess_frame(frame, boxes, scores, classes, threshold=0.01):
-    # boxes: Bounding box coordinates of detected objects
-    # scores: Confidence of detected objects
-    # classes: Class index of detected objects
-    for i in range(len(scores)):
-        if scores[i] > threshold:
-            box = boxes[i]  # y_min, x_min, y_max, x_max
-            class_id = int(classes[i])
-            confidence = scores[i]
-            label = labels[class_id] if class_id < len(labels) else 'Unknown'
-            frame = draw_detection(frame, box)
-            # Optionally, add text for label and confidence score
-            label_text = f'{label}: {confidence:.2f}'
-            start_point = (int(box[1] * frame.shape[1]), int(box[0] * frame.shape[0]))  # x_min, y_min
-            cv2.putText(frame, label_text, start_point, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-    return frame
-
 
 def classFilter(classdata):
     classes = []  # create a list
@@ -54,63 +36,74 @@ def YOLOdetect(output_data):  # input = interpreter, output is boxes(xyxy), clas
     return xyxy, classes, scores  # output is boxes(x,y,x,y), classes(int), scores(float) [predictions length]
 
 
-# TensorFlow Lite model and labels
-model_path = 'best_mydetector-fp16.tflite'
-labels = ['person', 'rider', 'car', 'bus', 'truck', 'bike', 'motor', 'traffic_light', 'traffic sign', 'train']
-
-# Initialize the TensorFlow Lite interpreter
-interpreter = tflite.Interpreter(model_path=model_path)
-interpreter.allocate_tensors()
-
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
-
-# Load the video
-video_path = 'Testvideo.mp4'
+# Video file handling
+video_path = '/Inference Images/video.mp4'  # Specify the path to your video file
 cap = cv2.VideoCapture(video_path)
 
-# Get original video properties
-original_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-original_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-original_fps = cap.get(cv2.CAP_PROP_FPS)
-
-# Video writer
-fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-output_path = 'output_video.mp4'
-out = cv2.VideoWriter(output_path, fourcc, original_fps, (original_width, original_height))
+# Define the codec and create VideoWriter object
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
+out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640, 640))
 
 while cap.isOpened():
-    print('frame')
     ret, frame = cap.read()
     if not ret:
         break
 
-    # Resize the frame for the model input
-    frame_resized = cv2.resize(frame, (640, 640))
+    # Resize frame to fit the model
+    frame = cv2.resize(frame, (640, 640))
+    copyFrame = frame.copy()
 
     # Preprocess the frame
-    input_data = preprocess_frame(frame_resized)
+    input_data = preprocess_frame(copyFrame)
     interpreter.set_tensor(input_details[0]['index'], input_data)
 
     # Run inference
-    interpreter.invoke()
+    output_data = interpreter.get_tensor(output_details[0]['index'])  # get tensor  x(1, 25200, 7)
+    xyxy, classes, scores = YOLOdetect(output_data) #boxes(x,y,x,y), classes(int), scores(float) [25200]
 
-    # Get output
-    output_data = interpreter.get_tensor(output_details[0]['index'])
-    xyxy, classes, scores = YOLOdetect(output_data)
-
-    # Scale bounding box coordinates back to original frame size
+    # Convert xyxy to the format expected by OpenCV NMS and prepare scores
+    boxes = []
+    confidences = []
     for i in range(len(scores)):
-        if scores[i] > 0.25:
-            ymin, xmin, ymax, xmax = xyxy[0][i], xyxy[1][i], xyxy[2][i], xyxy[3][i]
-            xmin, xmax = xmin * original_width / 640, xmax * original_width / 640
-            ymin, ymax = ymin * original_height / 640, ymax * original_height / 640
-            frame = draw_detection(frame, (ymin, xmin, ymax, xmax))
+        if scores[i] > 0.75:
+            H = frame.shape[0]
+            W = frame.shape[1]
+            xmin = max(1, (xyxy[0][i] * W))
+            ymin = max(1, (xyxy[1][i] * H))
+            xmax = min(H, (xyxy[2][i] * W))
+            ymax = min(W, (xyxy[3][i] * H))
+            boxes.append([xmin, ymin, int(xmax - xmin), int(ymax - ymin)])  # Format: [x, y, width, height]
+            confidences.append(float(scores[i]))
 
-    # Save the frame with bounding boxes
-    out.write(frame)
+    # Apply Non-Maximum Suppression
+    nms_threshold = 0.4  # NMS threshold, can be adjusted
+    indices = cv2.dnn.NMSBoxes(boxes, confidences, score_threshold=0.75, nms_threshold=nms_threshold)
 
-# Release everything
+    # Draw the rectangles and labels for NMS filtered detections
+    for i in indices:
+        i = i[0]  # Unpack the index
+        box = boxes[i]
+        x, y, w, h = box[0], box[1], box[2], box[3]
+
+        # Make sure coordinates are integers
+        x, y, w, h = int(x), int(y), int(w), int(h)
+
+        # Calculate the bottom-right corner of the rectangle
+        bottom_right_x = x + w
+        bottom_right_y = y + h
+
+        cv2.rectangle(frame, (x, y), (bottom_right_x, bottom_right_y), (10, 255, 0), 2)
+        cv2.putText(frame, labels[classes[i]], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
+        formatted_confidence = "{:.2f}".format(confidences[i])
+        cv2.putText(frame, formatted_confidence, (x + 100, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
+
+
+    out.write(frame)  # Write the frame into the file 'output.avi'
+
+    cv2.imshow('Frame', frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
 cap.release()
 out.release()
 cv2.destroyAllWindows()
