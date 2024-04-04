@@ -37,7 +37,7 @@ def YOLOdetect(output_data):  # input = interpreter, output is boxes(xyxy), clas
 
 
 # Video file handling
-video_path = '/Inference Images/video.mp4'  # Specify the path to your video file
+video_path = 'Inference Images/video.mp4'  # Specify the path to your video file
 cap = cv2.VideoCapture(video_path)
 
 # Define the codec and create VideoWriter object
