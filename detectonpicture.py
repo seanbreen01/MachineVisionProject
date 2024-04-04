@@ -32,7 +32,7 @@ def draw_detection(frame, box, color=(255, 0, 0), thickness=2):
     frame = cv2.rectangle(frame, start_point, end_point, color, thickness)
     return frame
 
-def postprocess_frame(frame, boxes, scores, classes, threshold=0.01):
+def postprocess_frame(frame, boxes, scores, classes, threshold=0.2):
     # boxes: Bounding box coordinates of detected objects
     # scores: Confidence of detected objects
     # classes: Class index of detected objects
