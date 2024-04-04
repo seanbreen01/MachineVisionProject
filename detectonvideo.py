@@ -65,7 +65,7 @@ while cap.isOpened():
     boxes = []
     confidences = []
     for i in range(len(scores)):
-        if scores[i] > 0.99:
+        if scores[i] > 0.75:
             H = frame.shape[0]
             W = frame.shape[1]
             xmin = max(1, (xyxy[0][i] * W))
