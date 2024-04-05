@@ -50,7 +50,7 @@ def YOLOdetect(output_data):  # input = interpreter, output is boxes(xyxy), clas
 # Video file handling
 video_path = 'Inference Images/video.mp4'  # Specify the path to your video file
 
-pipeline = gstreamer_pipeline(flip_method=2)
+pipeline = gstreamer_pipeline(flip_method=0)
 cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
 
 while cap.isOpened():
