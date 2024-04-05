@@ -67,27 +67,29 @@ for i in range(len(scores)):
         confidences.append(float(scores[i]))
 
 # Apply Non-Maximum Suppression
-nms_threshold = 0.4  # NMS threshold, can be adjusted
-indices = cv2.dnn.NMSBoxes(boxes, confidences, score_threshold=0.75, nms_threshold=nms_threshold)
+# nms_threshold = 0.4  # NMS threshold, can be adjusted
+# indices = cv2.dnn.NMSBoxes(boxes, confidences, score_threshold=0.75, nms_threshold=nms_threshold)
 
-# Draw the rectangles and labels for NMS filtered detections
-for i in indices:
-    i = i[0]  # Unpack the index
-    box = boxes[i]
-    x, y, w, h = box[0], box[1], box[2], box[3]
+for i in range(len(scores)):
+    if scores[i] > 0.75:  # Keep the confidence threshold
+        H = frame.shape[0]
+        W = frame.shape[1]
+        xmin = max(1, int(xyxy[0][i] * W))
+        ymin = max(1, int(xyxy[1][i] * H))
+        xmax = min(W, int(xyxy[2][i] * W))
+        ymax = min(H, int(xyxy[3][i] * H))
 
-    # Make sure coordinates are integers
-    x, y, w, h = int(x), int(y), int(w), int(h)
+        # Calculate the bottom-right corner of the rectangle
+        bottom_right_x = xmin + (xmax - xmin)
+        bottom_right_y = ymin + (ymax - ymin)
 
-    # Calculate the bottom-right corner of the rectangle
-    bottom_right_x = x + w
-    bottom_right_y = y + h
-
-    cv2.rectangle(frame, (x, y), (bottom_right_x, bottom_right_y), (10, 255, 0), 2)
-    cv2.putText(frame, labels[classes[i]], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
-    formatted_confidence = "{:.2f}".format(confidences[i])
-    cv2.putText(frame, formatted_confidence, (x + 100, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
+        cv2.rectangle(frame, (xmin, ymin), (bottom_right_x, bottom_right_y), (10, 255, 0), 2)
+        cv2.putText(frame, labels[classes[i]], (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
+        formatted_confidence = "{:.2f}".format(scores[i])
+        cv2.putText(frame, formatted_confidence, (xmin + 100, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
 
 cv2.namedWindow('detect_result', cv2.WINDOW_NORMAL)
 cv2.imshow('detect_result', frame)
 cv2.waitKey(0)
+
+
