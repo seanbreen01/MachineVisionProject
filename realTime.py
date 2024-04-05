@@ -48,14 +48,18 @@ def detect(output_data):                    # input = interpreter, output is box
 
 pipeline = gstreamer_pipeline(flip_method=0)
 cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
-
+gpu_img = cv2.cuda_GpuMat()
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         break
 
     # Resize frame to fit the model
-    frame = cv2.resize(frame, (640, 640))
+
+    gpu_img.upload(frame)
+    gpu_img = cv2.cuda.resize(gpu_img, (640, 640))
+    frame = gpu_img.download()
+    
     copyFrame = frame.copy()
 
     # Preprocess the frame
