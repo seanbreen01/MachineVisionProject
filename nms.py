@@ -52,26 +52,10 @@ interpreter.invoke()
 output_data = interpreter.get_tensor(output_details[0]['index'])  # get tensor  x(1, 25200, 7)
 xyxy, classes, scores = YOLOdetect(output_data) #boxes(x,y,x,y), classes(int), scores(float) [25200]
 
-# Convert xyxy to the format expected by OpenCV NMS and prepare scores
-boxes = []
-confidences = []
-for i in range(len(scores)):
-    if scores[i] > 0.75:
-        H = frame.shape[0]
-        W = frame.shape[1]
-        xmin = max(1, (xyxy[0][i] * W))
-        ymin = max(1, (xyxy[1][i] * H))
-        xmax = min(H, (xyxy[2][i] * W))
-        ymax = min(W, (xyxy[3][i] * H))
-        boxes.append([xmin, ymin, int(xmax - xmin), int(ymax - ymin)])  # Format: [x, y, width, height]
-        confidences.append(float(scores[i]))
 
-# Apply Non-Maximum Suppression
-# nms_threshold = 0.4  # NMS threshold, can be adjusted
-# indices = cv2.dnn.NMSBoxes(boxes, confidences, score_threshold=0.75, nms_threshold=nms_threshold)
 
 for i in range(len(scores)):
-    if scores[i] > 0.75:  # Keep the confidence threshold
+    if scores[i] > 0.4:  # Keep the confidence threshold
         H = frame.shape[0]
         W = frame.shape[1]
         xmin = max(1, int(xyxy[0][i] * W))
