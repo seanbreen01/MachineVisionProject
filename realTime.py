@@ -59,7 +59,7 @@ while cap.isOpened():
     gpu_img.upload(frame)
     gpu_img = cv2.cuda.resize(gpu_img, (640, 640))
     frame = gpu_img.download()
-    
+
     copyFrame = frame.copy()
 
     # Preprocess the frame
@@ -90,6 +90,9 @@ while cap.isOpened():
     nms_threshold = 0.4  # NMS threshold, can be adjusted
     indices = cv2.dnn.NMSBoxes(boxes, confidences, score_threshold=0.4, nms_threshold=nms_threshold)
 
+    # Extra credit: Count the number of 'person' class detections
+    person_count = 0
+
     # Draw the rectangles and labels for NMS filtered detections
     for i in indices:
         i = i[0]  # Unpack the index
@@ -103,11 +106,16 @@ while cap.isOpened():
         bottom_right_x = x + w
         bottom_right_y = y + h
 
+        if labels[classes[i]] == 'person':
+            person_count += 1
+
         cv2.rectangle(frame, (x, y), (bottom_right_x, bottom_right_y), (10, 255, 0), 2)
         cv2.putText(frame, labels[classes[i]], (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
         formatted_confidence = "{:.2f}".format(confidences[i])
         cv2.putText(frame, formatted_confidence, (x + 100, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (36, 255, 12), 2)
 
+    # Display the count of 'person' class on the frame
+    cv2.putText(frame, f'Number of People Detected: {person_count}', (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (36, 255, 12), 2)
     cv2.imshow('Frame', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
