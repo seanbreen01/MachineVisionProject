@@ -46,12 +46,6 @@ def detect(output_data):                    # input = interpreter, output is box
     return xyxy, classes, scores  # output is boxes(x,y,x,y), classes(int), scores(float) [predictions length]
 
 
-<<<<<<< HEAD
-# Video file handling
-video_path = 'Inference Images/video.mp4'  # Specify the path to your video file
-
-=======
->>>>>>> dded0f2bd2afa8fc8c53262ad2a3e1010fe1553e
 pipeline = gstreamer_pipeline(flip_method=0)
 cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
 
