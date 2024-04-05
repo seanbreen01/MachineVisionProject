@@ -71,7 +71,7 @@ nms_threshold = 0.4  # NMS threshold, can be adjusted
 # indices = cv2.dnn.NMSBoxes(boxes, confidences, score_threshold=0.75, nms_threshold=nms_threshold)
 
 # Draw the rectangles and labels for NMS filtered detections
-for i in len(scores):
+for i in range(len(scores)):
     i = i[0]  # Unpack the index
     box = boxes[i]
     x, y, w, h = box[0], box[1], box[2], box[3]
